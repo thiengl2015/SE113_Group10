@@ -1,19 +1,14 @@
-const ok = (res, data = null, status = 200) => {
-  return res.status(status).json({
-    status: "success",
-    timestamp: new Date().toISOString(),
-    data,
-    error: null,
-  });
+const ok = (res, { data, message = "OK", statusCode = 200, metadata } = {}) => {
+  const body = { statusCode, message };
+  if (data !== undefined && data !== null) body.data = data;
+  if (metadata !== undefined) body.metadata = metadata;
+  return res.status(statusCode).json(body);
 };
 
-const fail = (res, statusCode, message, details = undefined) => {
-  return res.status(statusCode).json({
-    status: "error",
-    timestamp: new Date().toISOString(),
-    data: null,
-    error: { code: statusCode, message, details },
-  });
+const fail = (res, statusCode, message, details) => {
+  const body = { statusCode, message };
+  if (details !== undefined) body.details = details;
+  return res.status(statusCode).json(body);
 };
 
 module.exports = { ok, fail };

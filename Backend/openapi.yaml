@@ -114,17 +114,8 @@ tags:
   - name: Reservations
   - name: Incidents
   - name: Reports
-  - name: System
 
 paths:
-  /health:
-    get:
-      tags: [System]
-      summary: Health check
-      security: []
-      responses:
-        "200": { description: OK }
-
   # ---------------- Auth ----------------
   /auth/register:
     post:
@@ -191,9 +182,12 @@ paths:
           application/json:
             schema:
               type: object
-              required: [email, password]
+              required: [identifier, password]
               properties:
-                email: { type: string, example: admin@example.com }
+                identifier:
+                  type: string
+                  description: Email or username
+                  example: admin@example.com
                 password: { type: string, example: Admin@1234 }
       responses:
         "200": { description: OK }

@@ -1,6 +1,19 @@
 const prisma = require("../config/prisma");
 const ApiError = require("../utils/ApiError");
 
+const formatLabRoom = (r) => ({
+  id: r.id,
+  room_code: r.room_code,
+  name: r.name,
+  location: r.location,
+  capacity: r.capacity,
+  description: r.description,
+  status: r.status,
+  workstation_count: r._count?.workstations ?? 0,
+  workstations: r.workstations,
+  created_at: r.created_at,
+});
+
 const list = async ({
   search,
   status,
@@ -47,11 +60,11 @@ const list = async ({
     orderBy: { name: "asc" },
   });
 
-  return rows.map((r) => ({
-    ...r,
-    workstation_count: r._count.workstations,
-    _count: undefined,
-  }));
+  return rows.map((r) => {
+    const formatted = formatLabRoom(r);
+    delete formatted.workstations;
+    return formatted;
+  });
 };
 
 const getById = async (id) => {
@@ -76,11 +89,7 @@ const getById = async (id) => {
     },
   });
   if (!room) throw ApiError.notFound("Lab room not found");
-  return {
-    ...room,
-    workstation_count: room._count.workstations,
-    _count: undefined,
-  };
+  return formatLabRoom(room);
 };
 
 const create = async ({ roomCode, name, location, capacity, description }) => {

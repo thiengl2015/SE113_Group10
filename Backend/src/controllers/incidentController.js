@@ -1,4 +1,5 @@
 const incidentService = require("../services/incidentService");
+const ApiError = require("../utils/ApiError");
 const { ok } = require("../utils/response");
 const asyncHandler = require("../utils/asyncHandler");
 
@@ -10,7 +11,11 @@ const createTicket = asyncHandler(async (req, res) => {
     category,
     description,
   });
-  return ok(res, ticket, 201);
+  return ok(res, {
+    statusCode: 201,
+    message: "Ticket created",
+    data: ticket,
+  });
 });
 
 const listTickets = asyncHandler(async (req, res) => {
@@ -24,16 +29,22 @@ const listTickets = asyncHandler(async (req, res) => {
     page,
     pageSize,
   });
-  return ok(res, result);
+  return ok(res, {
+    data: result.items,
+    metadata: {
+      total: result.total,
+      page: result.page,
+      pageSize: result.pageSize,
+    },
+  });
 });
 
 const getTicket = asyncHandler(async (req, res) => {
   const ticket = await incidentService.getById(parseInt(req.params.id, 10));
-  if (req.user.role === "customer" && ticket.reporter_id !== req.user.id) {
-    const ApiError = require("../utils/ApiError");
+  if (req.user.role === "customer" && ticket.reporter?.id !== req.user.id) {
     throw ApiError.forbidden("Access denied");
   }
-  return ok(res, ticket);
+  return ok(res, { data: ticket });
 });
 
 const updateTicketStatus = asyncHandler(async (req, res) => {
@@ -43,7 +54,7 @@ const updateTicketStatus = asyncHandler(async (req, res) => {
     parseInt(req.params.id, 10),
     { status, resolutionNote },
   );
-  return ok(res, ticket);
+  return ok(res, { message: "Ticket status updated", data: ticket });
 });
 
 module.exports = { createTicket, listTickets, getTicket, updateTicketStatus };

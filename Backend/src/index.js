@@ -11,7 +11,6 @@ const { initializeDatabase } = require("./config/bootstrap");
 const errorHandler = require("./middlewares/errorHandler");
 const { apiLimiter } = require("./middlewares/rateLimit");
 
-const NODE_ENV = process.env.NODE_ENV || "development";
 const PORT = parseInt(process.env.PORT, 10) || 5000;
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "http://localhost:3000")
   .split(",")
@@ -49,10 +48,6 @@ app.use(
 );
 app.get("/api/openapi.json", (_req, res) => res.json(openapi));
 
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "OK", timestamp: new Date().toISOString() });
-});
-
 app.use("/api", apiLimiter);
 
 app.use("/api/auth", authRoutes);
@@ -65,10 +60,8 @@ app.use("/api/reports", reportRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
-    status: "error",
-    timestamp: new Date().toISOString(),
-    data: null,
-    error: { code: 404, message: `Route ${req.method} ${req.path} not found` },
+    statusCode: 404,
+    message: `Route ${req.method} ${req.path} not found`,
   });
 });
 
@@ -78,9 +71,7 @@ app.use(errorHandler);
   try {
     await initializeDatabase();
     app.listen(PORT, () => {
-      console.log(
-        `[CLMS] Server running on http://localhost:${PORT} (${NODE_ENV})`,
-      );
+      console.log(`[CLMS] Server running on http://localhost:${PORT}`);
       console.log(`[CLMS] Swagger UI: http://localhost:${PORT}/api/docs`);
     });
   } catch (err) {

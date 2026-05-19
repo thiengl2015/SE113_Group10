@@ -30,13 +30,10 @@ const registerRules = [
 ];
 
 const loginRules = [
-  body("email")
+  body("identifier")
     .trim()
     .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("Invalid email format")
-    .normalizeEmail(),
+    .withMessage("Email or username is required"),
   body("password").notEmpty().withMessage("Password is required"),
 ];
 

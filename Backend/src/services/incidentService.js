@@ -3,16 +3,31 @@ const ApiError = require("../utils/ApiError");
 
 const VALID_STATUSES = ["open", "under_review", "resolved", "closed"];
 
-const mapTicket = (t) => ({
-  ...t,
-  reporter_username: t.reporter?.username || null,
-  reporter_name: t.reporter?.full_name || null,
-  station_code: t.workstation?.station_code || null,
-  room_code: t.lab_room?.room_code || null,
-  room_name: t.lab_room?.name || null,
-  reporter: undefined,
-  workstation: undefined,
-  lab_room: undefined,
+const TICKET_INCLUDE = {
+  reporter: { select: { id: true, username: true, full_name: true } },
+  assigned_user: { select: { id: true, username: true, full_name: true } },
+  workstation: {
+    select: {
+      id: true,
+      station_code: true,
+      lab_room: { select: { id: true, room_code: true, name: true } },
+    },
+  },
+  lab_room: { select: { id: true, room_code: true, name: true } },
+};
+
+const formatTicket = (t) => ({
+  id: t.id,
+  category: t.category,
+  description: t.description,
+  status: t.status,
+  reporter: t.reporter || null,
+  assigned_user: t.assigned_user || null,
+  workstation: t.workstation || null,
+  lab_room: t.lab_room || null,
+  resolution_note: t.resolution_note,
+  created_at: t.created_at,
+  resolved_at: t.resolved_at,
 });
 
 const create = async (
@@ -59,11 +74,7 @@ const list = async ({
   const [items, total] = await prisma.$transaction([
     prisma.incidentTicket.findMany({
       where,
-      include: {
-        reporter: { select: { username: true, full_name: true } },
-        workstation: { select: { station_code: true } },
-        lab_room: { select: { room_code: true, name: true } },
-      },
+      include: TICKET_INCLUDE,
       orderBy: [{ status: "asc" }, { created_at: "desc" }],
       skip: offset,
       take: limit,
@@ -72,7 +83,7 @@ const list = async ({
   ]);
 
   return {
-    items: items.map(mapTicket),
+    items: items.map(formatTicket),
     total,
     page: Number(page),
     pageSize: limit,
@@ -82,14 +93,10 @@ const list = async ({
 const getById = async (id) => {
   const ticket = await prisma.incidentTicket.findUnique({
     where: { id },
-    include: {
-      reporter: { select: { username: true, full_name: true } },
-      workstation: { select: { station_code: true } },
-      lab_room: { select: { room_code: true, name: true } },
-    },
+    include: TICKET_INCLUDE,
   });
   if (!ticket) throw ApiError.notFound("Incident ticket not found");
-  return mapTicket(ticket);
+  return formatTicket(ticket);
 };
 
 const updateStatus = async (staffId, ticketId, { status, resolutionNote }) => {

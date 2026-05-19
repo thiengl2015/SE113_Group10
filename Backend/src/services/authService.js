@@ -17,32 +17,54 @@ const generateOtp = () =>
   String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
 
 const register = async ({ username, email, password }) => {
-  const existing = await prisma.user.findFirst({
-    where: { OR: [{ email }, { username }] },
+  const byEmail = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, is_verified: true },
+  });
+
+  if (byEmail && byEmail.is_verified) {
+    throw ApiError.conflict("Email already registered");
+  }
+
+  const byUsername = await prisma.user.findUnique({
+    where: { username },
     select: { id: true },
   });
-  if (existing) {
-    throw ApiError.conflict("Email or username already exists");
+  if (byUsername && (!byEmail || byUsername.id !== byEmail.id)) {
+    throw ApiError.conflict("Username already taken");
   }
 
   const hashed = await hashPassword(password);
   const otp = generateOtp();
   const otpExp = new Date(Date.now() + OTP_TTL_MINUTES * 60_000);
 
-  await prisma.user.create({
-    data: {
-      username,
-      email,
-      password: hashed,
-      full_name: username,
-      phone: "",
-      role: "customer",
-      status: "pending",
-      is_verified: false,
-      verification_token: otp,
-      verification_token_exp: otpExp,
-    },
-  });
+  if (byEmail) {
+    await prisma.user.update({
+      where: { id: byEmail.id },
+      data: {
+        username,
+        password: hashed,
+        full_name: username,
+        verification_token: otp,
+        verification_token_exp: otpExp,
+      },
+    });
+  } else {
+    await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: hashed,
+        full_name: username,
+        phone: "",
+        role: "customer",
+        status: "pending",
+        is_verified: false,
+        verification_token: otp,
+        verification_token_exp: otpExp,
+      },
+    });
+  }
 
   sendVerificationOtp(email, otp);
 
@@ -82,7 +104,7 @@ const verifyEmail = async (email, otp) => {
   });
 };
 
-const issueTokens = async (user, req) => {
+const issueTokens = async (user) => {
   const payload = { sub: user.id, role: user.role, username: user.username };
   const accessToken = tokens.signAccessToken(payload);
   const refreshToken = tokens.signRefreshToken(payload);
@@ -96,8 +118,6 @@ const issueTokens = async (user, req) => {
     data: {
       user_id: user.id,
       token_hash: tokenHash,
-      user_agent: (req?.headers?.["user-agent"] || "").slice(0, 255),
-      ip_address: (req?.ip || "").slice(0, 45),
       expires_at: expiresAt,
     },
   });
@@ -105,9 +125,9 @@ const issueTokens = async (user, req) => {
   return { accessToken, refreshToken };
 };
 
-const login = async ({ email, password }, req) => {
-  const user = await prisma.user.findUnique({
-    where: { email },
+const login = async ({ identifier, password }) => {
+  const user = await prisma.user.findFirst({
+    where: { OR: [{ email: identifier }, { username: identifier }] },
     select: {
       id: true,
       username: true,
@@ -159,7 +179,7 @@ const login = async ({ email, password }, req) => {
     data: { failed_login_attempts: 0, lock_until: null },
   });
 
-  const tokensPair = await issueTokens(user, req);
+  const tokensPair = await issueTokens(user);
   return {
     user: {
       id: user.id,
@@ -172,7 +192,7 @@ const login = async ({ email, password }, req) => {
   };
 };
 
-const refresh = async (refreshToken, req) => {
+const refresh = async (refreshToken) => {
   if (!refreshToken) throw ApiError.unauthorized("Missing refresh token");
 
   try {
@@ -190,23 +210,19 @@ const refresh = async (refreshToken, req) => {
   });
   if (!row) throw ApiError.unauthorized("Refresh token not recognized");
 
-  if (row.revoked) throw ApiError.unauthorized("Refresh token revoked");
   if (new Date(row.expires_at) < new Date())
     throw ApiError.unauthorized("Refresh token expired");
   if (row.user.status === "blocked")
     throw ApiError.forbidden("Account blocked");
 
-  await prisma.refreshToken.update({
-    where: { id: row.id },
-    data: { revoked: true },
-  });
+  await prisma.refreshToken.delete({ where: { id: row.id } });
 
   const user = {
     id: row.user_id,
     username: row.user.username,
     role: row.user.role,
   };
-  const newPair = await issueTokens(user, req);
+  const newPair = await issueTokens(user);
   return newPair;
 };
 

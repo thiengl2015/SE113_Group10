@@ -1,44 +1,19 @@
 const nodemailer = require("nodemailer");
 
 const EMAIL_SERVICE = process.env.EMAIL_SERVICE || "gmail";
-const EMAIL_USER = process.env.EMAIL_USER || "";
-const EMAIL_PASS = process.env.EMAIL_PASS || "";
-const EMAIL_FROM =
-  process.env.EMAIL_FROM || process.env.EMAIL_USER || "no-reply@clms.local";
-const OTP_TTL_MINUTES = parseInt(process.env.OTP_TTL_MINUTES, 10) || 10;
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
+const EMAIL_FROM = process.env.EMAIL_FROM || EMAIL_USER;
+const OTP_TTL_MINUTES = parseInt(process.env.OTP_TTL_MINUTES, 10) || 5;
 
-let transporter = null;
-
-const getTransporter = () => {
-  if (transporter) return transporter;
-  if (!EMAIL_USER || !EMAIL_PASS) {
-    return {
-      sendMail: async (opts) => {
-        console.log(
-          "[EMAIL DISABLED] Would send:",
-          opts.subject,
-          "->",
-          opts.to,
-        );
-        return { messageId: "stub" };
-      },
-    };
-  }
-  transporter = nodemailer.createTransport({
-    service: EMAIL_SERVICE,
-    auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-  });
-  return transporter;
-};
+const transporter = nodemailer.createTransport({
+  service: EMAIL_SERVICE,
+  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+});
 
 const sendEmail = async (to, subject, html) => {
   try {
-    await getTransporter().sendMail({
-      from: EMAIL_FROM,
-      to,
-      subject,
-      html,
-    });
+    await transporter.sendMail({ from: EMAIL_FROM, to, subject, html });
   } catch (err) {
     console.error("[Email send error]", err.message);
   }

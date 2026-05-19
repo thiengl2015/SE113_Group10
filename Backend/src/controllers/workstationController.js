@@ -25,12 +25,12 @@ const listWorkstations = asyncHandler(async (req, res) => {
     cpu,
     os,
   });
-  return ok(res, items);
+  return ok(res, { data: items });
 });
 
 const getWorkstation = asyncHandler(async (req, res) => {
   const ws = await workstationService.getById(parseInt(req.params.id, 10));
-  return ok(res, ws);
+  return ok(res, { data: ws });
 });
 
 const createWorkstation = asyncHandler(async (req, res) => {
@@ -46,7 +46,11 @@ const createWorkstation = asyncHandler(async (req, res) => {
     gpu,
     os,
   });
-  return ok(res, ws, 201);
+  return ok(res, {
+    statusCode: 201,
+    message: "Workstation created",
+    data: ws,
+  });
 });
 
 const updateWorkstation = asyncHandler(async (req, res) => {
@@ -60,7 +64,7 @@ const updateWorkstation = asyncHandler(async (req, res) => {
     gpu,
     os,
   });
-  return ok(res, ws);
+  return ok(res, { message: "Workstation updated", data: ws });
 });
 
 const setWorkstationState = asyncHandler(async (req, res) => {
@@ -69,19 +73,21 @@ const setWorkstationState = asyncHandler(async (req, res) => {
 
   if (force) {
     const ws = await workstationService.forceSetState(id, state);
-    return ok(res, ws);
+    return ok(res, { message: "Workstation state updated (forced)", data: ws });
   }
 
   const result = await workstationService.setState(id, state, req.user.id);
   if (result.warning) {
     return ok(res, {
-      warning: true,
       message:
         "This workstation has upcoming approved bookings. Send force=true to override.",
-      workstation: result.workstation,
+      data: result.workstation,
     });
   }
-  return ok(res, result.workstation);
+  return ok(res, {
+    message: "Workstation state updated",
+    data: result.workstation,
+  });
 });
 
 const deleteWorkstation = asyncHandler(async (req, res) => {

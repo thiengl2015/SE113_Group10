@@ -9,8 +9,8 @@ const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: {
-    status: "error",
-    error: { code: 429, message: "Too many requests, please slow down." },
+    statusCode: 429,
+    message: "Too many requests, please slow down.",
   },
 });
 
@@ -20,11 +20,8 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: {
-    status: "error",
-    error: {
-      code: 429,
-      message: "Too many auth requests, please try again later.",
-    },
+    statusCode: 429,
+    message: "Too many auth requests, please try again later.",
   },
 });
 

@@ -41,10 +41,7 @@ model RefreshToken {
   id         Int      @id @default(autoincrement())
   user_id    Int
   token_hash String   @unique @db.Char(64)
-  user_agent String   @default("") @db.VarChar(255)
-  ip_address String   @default("") @db.VarChar(45)
   expires_at DateTime
-  revoked    Boolean  @default(false)
   created_at DateTime @default(now())
 
   user       User     @relation("RefreshTokenUser", fields: [user_id], references: [id], onDelete: Cascade)

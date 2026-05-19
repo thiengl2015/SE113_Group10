@@ -1,11 +1,22 @@
 const prisma = require("../config/prisma");
 const ApiError = require("../utils/ApiError");
 
-const mapWorkstation = (w) => ({
-  ...w,
-  room_code: w.lab_room?.room_code || null,
-  room_name: w.lab_room?.name || null,
-  lab_room: undefined,
+const WORKSTATION_INCLUDE = {
+  lab_room: { select: { id: true, room_code: true, name: true } },
+};
+
+const formatWorkstation = (w) => ({
+  id: w.id,
+  station_code: w.station_code,
+  ip_address: w.ip_address,
+  mac_address: w.mac_address,
+  cpu: w.cpu,
+  ram_gb: w.ram_gb,
+  gpu: w.gpu,
+  os: w.os,
+  state: w.state,
+  lab_room: w.lab_room || null,
+  created_at: w.created_at,
 });
 
 const list = async ({
@@ -52,19 +63,19 @@ const list = async ({
 
   const rows = await prisma.workstation.findMany({
     where,
-    include: { lab_room: { select: { room_code: true, name: true } } },
+    include: WORKSTATION_INCLUDE,
     orderBy: [{ lab_room: { name: "asc" } }, { station_code: "asc" }],
   });
-  return rows.map(mapWorkstation);
+  return rows.map(formatWorkstation);
 };
 
 const getById = async (id) => {
   const ws = await prisma.workstation.findUnique({
     where: { id },
-    include: { lab_room: { select: { room_code: true, name: true } } },
+    include: WORKSTATION_INCLUDE,
   });
   if (!ws) throw ApiError.notFound("Workstation not found");
-  return mapWorkstation(ws);
+  return formatWorkstation(ws);
 };
 
 const create = async ({
@@ -125,7 +136,7 @@ const update = async (
   return getById(id);
 };
 
-const setState = async (id, newState, staffId) => {
+const setState = async (id, newState) => {
   const ws = await getById(id);
 
   if (newState === "maintenance") {

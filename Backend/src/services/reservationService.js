@@ -1,6 +1,43 @@
 const prisma = require("../config/prisma");
 const ApiError = require("../utils/ApiError");
 
+const RESERVATION_INCLUDE = {
+  user: { select: { id: true, username: true, email: true, full_name: true } },
+  lab_room: { select: { id: true, room_code: true, name: true } },
+  workstation: {
+    select: {
+      id: true,
+      station_code: true,
+      lab_room: { select: { id: true, room_code: true, name: true } },
+    },
+  },
+};
+
+const formatReservation = (r, { includeUser = true } = {}) => {
+  const base = {
+    id: r.id,
+    resource_type: r.resource_type,
+    start_time: r.start_time,
+    end_time: r.end_time,
+    status: r.status,
+    created_at: r.created_at,
+  };
+  if (includeUser) base.user = r.user || null;
+  if (r.resource_type === "lab_room") {
+    base.lab_room = r.lab_room || null;
+    base.purpose = r.purpose;
+    base.expected_users = r.expected_users;
+  } else {
+    base.workstation = r.workstation || null;
+  }
+  if (r.status === "rejected") base.reject_reason = r.reject_reason;
+  if (r.processed_by) {
+    base.processed_by = r.processed_by;
+    base.processed_at = r.processed_at;
+  }
+  return base;
+};
+
 const checkLabRoomOverlap = async (
   conn,
   labRoomId,
@@ -136,6 +173,17 @@ const reserveWorkstation = async (
   return getById(insertedId);
 };
 
+const HISTORY_INCLUDE = {
+  lab_room: { select: { id: true, room_code: true, name: true } },
+  workstation: {
+    select: {
+      id: true,
+      station_code: true,
+      lab_room: { select: { id: true, room_code: true, name: true } },
+    },
+  },
+};
+
 const getHistory = async (userId, { status, page = 1, pageSize = 20 }) => {
   const where = {
     user_id: userId,
@@ -148,10 +196,7 @@ const getHistory = async (userId, { status, page = 1, pageSize = 20 }) => {
   const [items, total] = await prisma.$transaction([
     prisma.reservation.findMany({
       where,
-      include: {
-        lab_room: { select: { room_code: true, name: true } },
-        workstation: { select: { station_code: true, lab_room_id: true } },
-      },
+      include: HISTORY_INCLUDE,
       orderBy: { created_at: "desc" },
       skip: offset,
       take: limit,
@@ -159,18 +204,8 @@ const getHistory = async (userId, { status, page = 1, pageSize = 20 }) => {
     prisma.reservation.count({ where }),
   ]);
 
-  const mapped = items.map((r) => ({
-    ...r,
-    room_code: r.lab_room?.room_code || null,
-    room_name: r.lab_room?.name || null,
-    station_code: r.workstation?.station_code || null,
-    ws_lab_room_id: r.workstation?.lab_room_id || null,
-    lab_room: undefined,
-    workstation: undefined,
-  }));
-
   return {
-    items: mapped,
+    items: items.map((r) => formatReservation(r, { includeUser: false })),
     total,
     page: Number(page),
     pageSize: limit,
@@ -204,11 +239,7 @@ const getPendingQueue = async ({ page = 1, pageSize = 20 }) => {
   const [items, total] = await prisma.$transaction([
     prisma.reservation.findMany({
       where: { status: "pending" },
-      include: {
-        user: { select: { username: true, email: true, full_name: true } },
-        lab_room: { select: { room_code: true, name: true } },
-        workstation: { select: { station_code: true } },
-      },
+      include: RESERVATION_INCLUDE,
       orderBy: { created_at: "asc" },
       skip: offset,
       take: limit,
@@ -216,21 +247,8 @@ const getPendingQueue = async ({ page = 1, pageSize = 20 }) => {
     prisma.reservation.count({ where: { status: "pending" } }),
   ]);
 
-  const mapped = items.map((r) => ({
-    ...r,
-    username: r.user?.username || null,
-    email: r.user?.email || null,
-    full_name: r.user?.full_name || null,
-    room_code: r.lab_room?.room_code || null,
-    room_name: r.lab_room?.name || null,
-    station_code: r.workstation?.station_code || null,
-    user: undefined,
-    lab_room: undefined,
-    workstation: undefined,
-  }));
-
   return {
-    items: mapped,
+    items: items.map(formatReservation),
     total,
     page: Number(page),
     pageSize: limit,
@@ -312,25 +330,10 @@ const rejectReservation = async (staffId, reservationId, reason) => {
 const getById = async (id) => {
   const row = await prisma.reservation.findUnique({
     where: { id },
-    include: {
-      user: { select: { username: true, email: true, full_name: true } },
-      lab_room: { select: { room_code: true, name: true } },
-      workstation: { select: { station_code: true } },
-    },
+    include: RESERVATION_INCLUDE,
   });
   if (!row) throw ApiError.notFound("Reservation not found");
-  return {
-    ...row,
-    username: row.user?.username || null,
-    email: row.user?.email || null,
-    full_name: row.user?.full_name || null,
-    room_code: row.lab_room?.room_code || null,
-    room_name: row.lab_room?.name || null,
-    station_code: row.workstation?.station_code || null,
-    user: undefined,
-    lab_room: undefined,
-    workstation: undefined,
-  };
+  return formatReservation(row);
 };
 
 module.exports = {

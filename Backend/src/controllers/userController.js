@@ -4,7 +4,7 @@ const asyncHandler = require("../utils/asyncHandler");
 
 const getMe = asyncHandler(async (req, res) => {
   const user = await userService.getById(req.user.id);
-  return ok(res, user);
+  return ok(res, { data: user });
 });
 
 const updateProfile = asyncHandler(async (req, res) => {
@@ -13,7 +13,7 @@ const updateProfile = asyncHandler(async (req, res) => {
     fullName,
     phone,
   });
-  return ok(res, user);
+  return ok(res, { message: "Profile updated", data: user });
 });
 
 const listUsers = asyncHandler(async (req, res) => {
@@ -25,12 +25,19 @@ const listUsers = asyncHandler(async (req, res) => {
     page,
     pageSize,
   });
-  return ok(res, result);
+  return ok(res, {
+    data: result.items,
+    metadata: {
+      total: result.total,
+      page: result.page,
+      pageSize: result.pageSize,
+    },
+  });
 });
 
 const getUserById = asyncHandler(async (req, res) => {
   const user = await userService.getById(parseInt(req.params.id, 10));
-  return ok(res, user);
+  return ok(res, { data: user });
 });
 
 const blockUser = asyncHandler(async (req, res) => {

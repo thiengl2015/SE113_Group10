@@ -37,10 +37,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   token_hash CHAR(64) NOT NULL UNIQUE,
-  user_agent VARCHAR(255) DEFAULT '',
-  ip_address VARCHAR(45) DEFAULT '',
   expires_at TIMESTAMP NOT NULL,
-  revoked BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_refresh_user ON refresh_tokens(user_id);

@@ -12,12 +12,12 @@ const listLabRooms = asyncHandler(async (req, res) => {
     endTime,
     minCapacity,
   });
-  return ok(res, rooms);
+  return ok(res, { data: rooms });
 });
 
 const getLabRoom = asyncHandler(async (req, res) => {
   const room = await labRoomService.getById(parseInt(req.params.id, 10));
-  return ok(res, room);
+  return ok(res, { data: room });
 });
 
 const createLabRoom = asyncHandler(async (req, res) => {
@@ -29,7 +29,11 @@ const createLabRoom = asyncHandler(async (req, res) => {
     capacity,
     description,
   });
-  return ok(res, room, 201);
+  return ok(res, {
+    statusCode: 201,
+    message: "Lab room created",
+    data: room,
+  });
 });
 
 const updateLabRoom = asyncHandler(async (req, res) => {
@@ -41,7 +45,7 @@ const updateLabRoom = asyncHandler(async (req, res) => {
     description,
     status,
   });
-  return ok(res, room);
+  return ok(res, { message: "Lab room updated", data: room });
 });
 
 const deleteLabRoom = asyncHandler(async (req, res) => {

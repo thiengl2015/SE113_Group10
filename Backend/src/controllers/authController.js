@@ -2,13 +2,11 @@ const authService = require("../services/authService");
 const { ok } = require("../utils/response");
 const asyncHandler = require("../utils/asyncHandler");
 
-const NODE_ENV = process.env.NODE_ENV || "development";
-
 const REFRESH_COOKIE = "refreshToken";
 
 const cookieOptions = {
   httpOnly: true,
-  secure: NODE_ENV === "production",
+  secure: false,
   sameSite: "Strict",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
@@ -16,14 +14,11 @@ const cookieOptions = {
 const register = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
   const data = await authService.register({ username, email, password });
-  return ok(
-    res,
-    {
-      message: "Registration successful. Please check your email for OTP.",
-      email: data.email,
-    },
-    201,
-  );
+  return ok(res, {
+    statusCode: 201,
+    message: "Registration successful. Please check your email for OTP.",
+    data: { email: data.email },
+  });
 });
 
 const verifyEmail = asyncHandler(async (req, res) => {
@@ -35,13 +30,13 @@ const verifyEmail = asyncHandler(async (req, res) => {
 });
 
 const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  const result = await authService.login({ email, password }, req);
+  const { identifier, password } = req.body;
+  const result = await authService.login({ identifier, password });
 
   res.cookie(REFRESH_COOKIE, result.refreshToken, cookieOptions);
   return ok(res, {
-    user: result.user,
-    accessToken: result.accessToken,
+    message: "Login successful",
+    data: { user: result.user, accessToken: result.accessToken },
   });
 });
 
@@ -54,9 +49,12 @@ const logout = asyncHandler(async (req, res) => {
 
 const refreshToken = asyncHandler(async (req, res) => {
   const token = req.cookies?.[REFRESH_COOKIE];
-  const result = await authService.refresh(token, req);
+  const result = await authService.refresh(token);
   res.cookie(REFRESH_COOKIE, result.refreshToken, cookieOptions);
-  return ok(res, { accessToken: result.accessToken });
+  return ok(res, {
+    message: "Token refreshed",
+    data: { accessToken: result.accessToken },
+  });
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {

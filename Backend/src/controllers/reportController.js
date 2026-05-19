@@ -9,7 +9,7 @@ const generateReport = asyncHandler(async (req, res) => {
     endDate,
     labRoomId: labRoomId ? parseInt(labRoomId, 10) : null,
   });
-  return ok(res, report);
+  return ok(res, { data: report });
 });
 
 module.exports = { generateReport };

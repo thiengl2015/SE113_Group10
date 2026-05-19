@@ -1,7 +1,5 @@
 const { fail } = require("../utils/response");
 
-const NODE_ENV = process.env.NODE_ENV || "development";
-
 const errorHandler = (err, req, res, next) => {
   if (Array.isArray(err?.errors) && err?.statusCode === 422) {
     return fail(res, 422, "Validation failed", err.errors);
@@ -24,12 +22,7 @@ const errorHandler = (err, req, res, next) => {
   }
 
   console.error("[Unhandled error]", err);
-  return fail(
-    res,
-    500,
-    "Internal server error",
-    NODE_ENV === "development" ? err.message : undefined,
-  );
+  return fail(res, 500, "Internal server error", err.message);
 };
 
 module.exports = errorHandler;
