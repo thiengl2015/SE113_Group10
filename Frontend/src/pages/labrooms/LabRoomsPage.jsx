@@ -1,15 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Building2,
-  Plus,
-  Search,
-  Filter,
-  Users,
-  MapPin,
-  Edit,
-  Trash2,
-} from "lucide-react";
+import { Building2, Plus, Search, Filter, Users, MapPin, Edit, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import Topbar from "../../components/layout/Topbar";
 import Loader, { EmptyState } from "../../components/ui/Loader";
@@ -69,7 +60,6 @@ export default function LabRoomsPage() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onSubmitFilter = (e) => {
@@ -96,37 +86,31 @@ export default function LabRoomsPage() {
         actions={
           isAdmin ? (
             <button
-              className="btn-primary"
+              className="btn btn-primary btn-sm"
               onClick={() => setEditing({ isNew: true })}
             >
-              <Plus size={16} /> Thêm phòng
+              <Plus size={14} /> Thêm phòng
             </button>
           ) : null
         }
       />
 
-      <div className="p-6 space-y-5">
+      <div className="p-4 lg:p-6 space-y-4">
         {/* Filters */}
-        <form
-          onSubmit={onSubmitFilter}
-          className="card card-body grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3"
-        >
-          <div className="lg:col-span-2 relative">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <input
-              className="input pl-9"
-              placeholder="Tìm theo mã phòng, tên, vị trí..."
-              value={filters.search}
-              onChange={(e) =>
-                setFilters({ ...filters, search: e.target.value })
-              }
-            />
+        <form onSubmit={onSubmitFilter} className="filter-bar">
+          <div className="flex-1 min-w-[200px]">
+            <div className="relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                className="input pl-8"
+                placeholder="Tìm theo mã phòng, tên, vị trí..."
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              />
+            </div>
           </div>
           <select
-            className="input"
+            className="input w-auto min-w-[150px]"
             value={filters.status}
             onChange={(e) => setFilters({ ...filters, status: e.target.value })}
           >
@@ -137,44 +121,34 @@ export default function LabRoomsPage() {
             ))}
           </select>
           <input
-            className="input"
+            className="input w-auto min-w-[140px]"
             type="number"
             min={1}
             placeholder="Sức chứa tối thiểu"
             value={filters.minCapacity}
-            onChange={(e) =>
-              setFilters({ ...filters, minCapacity: e.target.value })
-            }
+            onChange={(e) => setFilters({ ...filters, minCapacity: e.target.value })}
           />
           <input
-            className="input"
+            className="input w-auto"
             type="date"
             value={filters.date}
             onChange={(e) => setFilters({ ...filters, date: e.target.value })}
           />
-          <div className="flex gap-2">
-            <input
-              className="input"
-              type="time"
-              value={filters.startTime}
-              onChange={(e) =>
-                setFilters({ ...filters, startTime: e.target.value })
-              }
-            />
-            <input
-              className="input"
-              type="time"
-              value={filters.endTime}
-              onChange={(e) =>
-                setFilters({ ...filters, endTime: e.target.value })
-              }
-            />
-          </div>
-          <div className="md:col-span-2 lg:col-span-6 flex gap-2 justify-end">
-            <button type="submit" className="btn-primary">
-              <Filter size={16} /> Áp dụng bộ lọc
-            </button>
-          </div>
+          <input
+            className="input w-auto"
+            type="time"
+            value={filters.startTime}
+            onChange={(e) => setFilters({ ...filters, startTime: e.target.value })}
+          />
+          <input
+            className="input w-auto"
+            type="time"
+            value={filters.endTime}
+            onChange={(e) => setFilters({ ...filters, endTime: e.target.value })}
+          />
+          <button type="submit" className="btn btn-primary btn-sm">
+            <Filter size={14} /> Lọc
+          </button>
         </form>
 
         {loading ? (
@@ -188,19 +162,14 @@ export default function LabRoomsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {rooms.map((r) => (
-              <div
-                key={r.id}
-                className="card group hover:shadow-soft transition relative"
-              >
+              <div key={r.id} className="card">
                 <div className="card-body">
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="text-xs text-slate-500 font-semibold tracking-wide">
-                        {r.room_code}
-                      </div>
+                      <div className="text-xs text-slate-500 font-medium">{r.room_code}</div>
                       <Link
                         to={`/lab-rooms/${r.id}`}
-                        className="text-lg font-semibold text-slate-900 hover:text-brand-700"
+                        className="text-base font-medium text-slate-900 hover:text-brand-600"
                       >
                         {r.name}
                       </Link>
@@ -210,47 +179,41 @@ export default function LabRoomsPage() {
 
                   <div className="mt-3 space-y-1.5 text-sm text-slate-600">
                     <div className="flex items-center gap-2">
-                      <MapPin size={14} className="text-slate-400" />
-                      <span className="truncate">
-                        {r.location || "Chưa có vị trí"}
-                      </span>
+                      <MapPin size={13} className="text-slate-400 flex-shrink-0" />
+                      <span className="truncate text-xs">{r.location || "Chưa có vị trí"}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Users size={14} className="text-slate-400" />
-                      <span>
-                        {r.workstation_count}/{r.capacity} máy đăng ký
-                      </span>
+                      <Users size={13} className="text-slate-400 flex-shrink-0" />
+                      <span className="text-xs">{r.workstation_count}/{r.capacity} máy đăng ký</span>
                     </div>
                   </div>
 
                   {r.description && (
-                    <p className="mt-3 text-sm text-slate-500 line-clamp-2">
-                      {r.description}
-                    </p>
+                    <p className="mt-3 text-xs text-slate-500 line-clamp-2">{r.description}</p>
                   )}
                 </div>
-                <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between">
+                <div className="px-4 py-2.5 border-t border-slate-100 flex items-center justify-between">
                   <Link
                     to={`/lab-rooms/${r.id}`}
-                    className="text-sm font-semibold text-brand-700 hover:underline"
+                    className="text-sm font-medium text-brand-600 hover:underline"
                   >
-                    Xem & đặt phòng →
+                    Xem chi tiết →
                   </Link>
                   {isAdmin && (
                     <div className="flex gap-1">
                       <button
-                        className="btn-ghost p-1.5"
+                        className="btn btn-ghost btn-sm p-1.5"
                         onClick={() => setEditing({ isNew: false, ...r })}
                         title="Chỉnh sửa"
                       >
-                        <Edit size={15} />
+                        <Edit size={14} />
                       </button>
                       <button
-                        className="btn-ghost p-1.5 hover:text-red-600"
+                        className="btn btn-ghost btn-sm p-1.5 hover:text-red-600"
                         onClick={() => onDelete(r)}
                         title="Xóa"
                       >
-                        <Trash2 size={15} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   )}
@@ -323,29 +286,25 @@ function LabRoomFormModal({ initial, onClose, onSaved }) {
       open
       onClose={onClose}
       title={isNew ? "Thêm phòng lab" : `Chỉnh sửa ${initial.room_code}`}
-      size="lg"
+      size="md"
       footer={
         <>
-          <button className="btn-secondary" onClick={onClose}>
+          <button className="btn btn-secondary" onClick={onClose}>
             Hủy
           </button>
           <button
-            className="btn-primary"
+            className="btn btn-primary"
             onClick={onSubmit}
             disabled={saving}
-            type="submit"
           >
             {saving ? "Đang lưu..." : "Lưu"}
           </button>
         </>
       }
     >
-      <form
-        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-        onSubmit={onSubmit}
-      >
+      <form className="space-y-4" onSubmit={onSubmit}>
         {isNew && (
-          <div>
+          <div className="form-group">
             <label className="label">Mã phòng *</label>
             <input
               className="input"
@@ -356,7 +315,7 @@ function LabRoomFormModal({ initial, onClose, onSaved }) {
             />
           </div>
         )}
-        <div className={isNew ? "" : "sm:col-span-2"}>
+        <div className="form-group">
           <label className="label">Tên phòng *</label>
           <input
             className="input"
@@ -365,7 +324,7 @@ function LabRoomFormModal({ initial, onClose, onSaved }) {
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
         </div>
-        <div className="sm:col-span-2">
+        <div className="form-group">
           <label className="label">Vị trí</label>
           <input
             className="input"
@@ -374,32 +333,34 @@ function LabRoomFormModal({ initial, onClose, onSaved }) {
             placeholder="Tòa A, tầng 1"
           />
         </div>
-        <div>
-          <label className="label">Sức chứa *</label>
-          <input
-            className="input"
-            type="number"
-            min={1}
-            required
-            value={form.capacity}
-            onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-          />
-        </div>
-        {!isNew && (
-          <div>
-            <label className="label">Trạng thái</label>
-            <select
+        <div className="grid grid-cols-2 gap-4">
+          <div className="form-group">
+            <label className="label">Sức chứa *</label>
+            <input
               className="input"
-              value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value })}
-            >
-              <option value="active">Hoạt động</option>
-              <option value="maintenance">Bảo trì</option>
-              <option value="decommissioned">Ngừng sử dụng</option>
-            </select>
+              type="number"
+              min={1}
+              required
+              value={form.capacity}
+              onChange={(e) => setForm({ ...form, capacity: e.target.value })}
+            />
           </div>
-        )}
-        <div className="sm:col-span-2">
+          {!isNew && (
+            <div className="form-group">
+              <label className="label">Trạng thái</label>
+              <select
+                className="input"
+                value={form.status}
+                onChange={(e) => setForm({ ...form, status: e.target.value })}
+              >
+                <option value="active">Hoạt động</option>
+                <option value="maintenance">Bảo trì</option>
+                <option value="decommissioned">Ngừng sử dụng</option>
+              </select>
+            </div>
+          )}
+        </div>
+        <div className="form-group">
           <label className="label">Mô tả</label>
           <textarea
             className="input"

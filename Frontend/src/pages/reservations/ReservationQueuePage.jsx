@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Inbox, Check, X, Loader2 } from "lucide-react";
+import { Check, X } from "lucide-react";
 import toast from "react-hot-toast";
 import Topbar from "../../components/layout/Topbar";
 import Loader, { EmptyState } from "../../components/ui/Loader";
@@ -32,7 +32,6 @@ export default function ReservationQueuePage() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const onApprove = async (r) => {
@@ -52,13 +51,13 @@ export default function ReservationQueuePage() {
         subtitle="Xem xét và xử lý yêu cầu đặt phòng, máy"
       />
 
-      <div className="p-6">
+      <div className="p-4 lg:p-6">
         <div className="card">
           {loading ? (
             <Loader />
           ) : items.length === 0 ? (
             <EmptyState
-              icon={Inbox}
+              icon={Check}
               title="Hàng chờ trống"
               description="Hiện không có yêu cầu nào đang chờ duyệt."
             />
@@ -79,15 +78,13 @@ export default function ReservationQueuePage() {
                   {items.map((r) => (
                     <tr key={r.id}>
                       <td>
-                        <div className="font-medium text-slate-900">
+                        <div className="font-medium text-slate-900 text-sm">
                           {r.user?.full_name || r.user?.username || "—"}
                         </div>
-                        <div className="text-xs text-slate-500">
-                          {r.user?.email}
-                        </div>
+                        <div className="text-xs text-slate-500">{r.user?.email}</div>
                       </td>
                       <td>
-                        <div className="font-medium text-slate-900">
+                        <div className="font-medium text-slate-900 text-sm">
                           {r.resource_type === "lab_room"
                             ? `Phòng ${r.lab_room?.room_code}`
                             : `Máy ${r.workstation?.station_code}`}
@@ -99,39 +96,31 @@ export default function ReservationQueuePage() {
                         </div>
                       </td>
                       <td className="text-sm">
-                        <div>{fmtDateTime(r.start_time)}</div>
-                        <div className="text-xs text-slate-500">
-                          → {fmtDateTime(r.end_time)}
-                        </div>
+                        <div className="text-slate-700">{fmtDateTime(r.start_time)}</div>
+                        <div className="text-xs text-slate-500">→ {fmtDateTime(r.end_time)}</div>
                       </td>
-                      <td className="max-w-[200px]">
+                      <td className="max-w-[180px]">
                         {r.resource_type === "lab_room" && (
                           <>
-                            <div className="text-sm text-slate-700 truncate">
-                              {r.purpose || "—"}
-                            </div>
-                            <div className="text-xs text-slate-500">
-                              {r.expected_users || 1} người
-                            </div>
+                            <div className="text-sm text-slate-700 truncate">{r.purpose || "—"}</div>
+                            <div className="text-xs text-slate-500">{r.expected_users || 1} người</div>
                           </>
                         )}
                       </td>
-                      <td>
-                        <StatusBadge status={r.status} />
-                      </td>
+                      <td><StatusBadge status={r.status} /></td>
                       <td className="text-right">
-                        <div className="flex justify-end gap-1">
+                        <div className="flex justify-end gap-1.5">
                           <button
-                            className="btn bg-emerald-600 text-white hover:bg-emerald-700 text-xs px-3"
+                            className="btn btn-sm bg-emerald-600 text-white hover:bg-emerald-700"
                             onClick={() => onApprove(r)}
                           >
-                            <Check size={14} /> Duyệt
+                            <Check size={13} /> Duyệt
                           </button>
                           <button
-                            className="btn-danger text-xs px-3"
+                            className="btn btn-sm btn-danger"
                             onClick={() => setRejecting(r)}
                           >
-                            <X size={14} /> Từ chối
+                            <X size={13} /> Từ chối
                           </button>
                         </div>
                       </td>
@@ -190,24 +179,19 @@ function RejectModal({ reservation, onClose, onDone }) {
       title="Từ chối yêu cầu"
       footer={
         <>
-          <button className="btn-secondary" onClick={onClose}>
-            Hủy
-          </button>
-          <button className="btn-danger" disabled={saving} onClick={onSubmit}>
-            {saving ? <Loader2 className="animate-spin" size={14} /> : null}
-            Từ chối
+          <button className="btn btn-secondary" onClick={onClose}>Hủy</button>
+          <button className="btn btn-danger" disabled={saving} onClick={onSubmit}>
+            {saving ? "Đang xử lý..." : "Từ chối"}
           </button>
         </>
       }
     >
       <form onSubmit={onSubmit} className="space-y-3">
         <div className="text-sm text-slate-600">
-          Yêu cầu #{reservation.id} của{" "}
-          <strong>
-            {reservation.user?.full_name || reservation.user?.username}
-          </strong>
+          Yêu cầu <strong>#{reservation.id}</strong> của{" "}
+          <strong>{reservation.user?.full_name || reservation.user?.username}</strong>
         </div>
-        <div>
+        <div className="form-group">
           <label className="label">Lý do từ chối *</label>
           <textarea
             className="input"

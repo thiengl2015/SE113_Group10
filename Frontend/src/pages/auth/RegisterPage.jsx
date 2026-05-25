@@ -43,13 +43,13 @@ export default function RegisterPage() {
   return (
     <AuthLayout
       title="Tạo tài khoản"
-      subtitle="Đăng ký để đặt phòng và máy trạm trong vài giây"
+      subtitle="Đăng ký để sử dụng hệ thống"
       footer={
         <>
           Đã có tài khoản?{" "}
           <Link
             to="/login"
-            className="text-brand-600 font-semibold hover:underline"
+            className="text-brand-600 font-medium hover:underline"
           >
             Đăng nhập
           </Link>
@@ -84,7 +84,7 @@ export default function RegisterPage() {
           <input
             className="input"
             type="password"
-            placeholder="Ít nhất 8 ký tự, có chữ hoa, số và ký tự đặc biệt"
+            placeholder="Ít nhất 8 ký tự"
             value={form.password}
             onChange={onChange("password")}
             required

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Users, Search, Ban, Unlock, Loader2 } from "lucide-react";
+import { Users, Search, Ban, Unlock } from "lucide-react";
 import toast from "react-hot-toast";
 import Topbar from "../../components/layout/Topbar";
 import Loader, { EmptyState } from "../../components/ui/Loader";
@@ -52,8 +52,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [page, filters.search, filters.role, filters.status]);
 
   const onSearch = (e) => {
     e.preventDefault();
@@ -79,49 +78,40 @@ export default function UsersPage() {
         subtitle="Xem, khóa và mở khóa tài khoản"
       />
 
-      <div className="p-6 space-y-5">
-        <form
-          onSubmit={onSearch}
-          className="card card-body grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3"
-        >
-          <div className="lg:col-span-2 relative">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <input
-              className="input pl-9"
-              placeholder="Tên, email..."
-              value={filters.search}
-              onChange={(e) =>
-                setFilters({ ...filters, search: e.target.value })
-              }
-            />
+      <div className="p-4 lg:p-6 space-y-4">
+        {/* Filters */}
+        <form onSubmit={onSearch} className="filter-bar">
+          <div className="flex-1 min-w-[180px]">
+            <div className="relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                className="input pl-8"
+                placeholder="Tên, email..."
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              />
+            </div>
           </div>
           <select
-            className="input"
+            className="input w-auto min-w-[140px]"
             value={filters.role}
             onChange={(e) => setFilters({ ...filters, role: e.target.value })}
           >
             {ROLES.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
-              </option>
+              <option key={r.value} value={r.value}>{r.label}</option>
             ))}
           </select>
           <select
-            className="input"
+            className="input w-auto min-w-[140px]"
             value={filters.status}
             onChange={(e) => setFilters({ ...filters, status: e.target.value })}
           >
             {STATUSES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
+              <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
-          <button type="submit" className="btn-primary">
-            <Search size={16} /> Tìm
+          <button type="submit" className="btn btn-primary btn-sm">
+            <Search size={14} /> Tìm
           </button>
         </form>
 
@@ -147,38 +137,30 @@ export default function UsersPage() {
                   {items.map((u) => (
                     <tr key={u.id}>
                       <td>
-                        <div className="font-medium text-slate-900">
+                        <div className="font-medium text-slate-900 text-sm">
                           {u.full_name || u.username}
                         </div>
-                        <div className="text-xs text-slate-500">
-                          @{u.username}
-                        </div>
+                        <div className="text-xs text-slate-500">@{u.username}</div>
                       </td>
-                      <td className="text-sm">{u.email}</td>
-                      <td>
-                        <StatusBadge status={u.role} />
-                      </td>
-                      <td>
-                        <StatusBadge status={u.status} />
-                      </td>
-                      <td className="text-xs text-slate-500">
-                        {fmtDateTime(u.created_at)}
-                      </td>
+                      <td className="text-xs text-slate-600">{u.email}</td>
+                      <td><StatusBadge status={u.role} /></td>
+                      <td><StatusBadge status={u.status} /></td>
+                      <td className="text-xs text-slate-500">{fmtDateTime(u.created_at)}</td>
                       <td className="text-right">
                         {u.status === "blocked" ? (
                           <button
-                            className="btn-ghost text-xs text-emerald-600"
+                            className="btn btn-ghost btn-sm text-emerald-600"
                             onClick={() => onUnblock(u)}
                           >
-                            <Unlock size={14} /> Mở khóa
+                            <Unlock size={13} /> Mở khóa
                           </button>
                         ) : (
                           u.role !== "system_admin" && (
                             <button
-                              className="btn-ghost text-xs text-red-600"
+                              className="btn btn-ghost btn-sm text-red-600"
                               onClick={() => setBlocking(u)}
                             >
-                              <Ban size={14} /> Khóa
+                              <Ban size={13} /> Khóa
                             </button>
                           )
                         )}
@@ -238,22 +220,18 @@ function BlockUserModal({ user: target, onClose, onDone }) {
       title={`Khóa tài khoản @${target.username}`}
       footer={
         <>
-          <button className="btn-secondary" onClick={onClose}>
-            Hủy
-          </button>
-          <button className="btn-danger" disabled={saving} onClick={onSubmit}>
-            {saving ? <Loader2 className="animate-spin" size={14} /> : null}
-            Khóa tài khoản
+          <button className="btn btn-secondary" onClick={onClose}>Hủy</button>
+          <button className="btn btn-danger" disabled={saving} onClick={onSubmit}>
+            {saving ? "Đang xử lý..." : "Khóa tài khoản"}
           </button>
         </>
       }
     >
       <form onSubmit={onSubmit} className="space-y-3">
         <p className="text-sm text-slate-600">
-          Tài khoản <strong>{target.full_name || target.username}</strong> sẽ bị
-          chặn khỏi hệ thống.
+          Tài khoản <strong>{target.full_name || target.username}</strong> sẽ bị chặn khỏi hệ thống.
         </p>
-        <div>
+        <div className="form-group">
           <label className="label">Lý do *</label>
           <textarea
             className="input"

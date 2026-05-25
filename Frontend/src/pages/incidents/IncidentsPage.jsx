@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AlertTriangle, Plus, Search, Filter } from "lucide-react";
+import { AlertTriangle, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import Topbar from "../../components/layout/Topbar";
 import Loader, { EmptyState } from "../../components/ui/Loader";
@@ -12,9 +12,8 @@ import {
   labRoomApi,
   workstationApi,
 } from "../../services/authService";
-import { useAuthStore } from "../../store/authStore";
 import { apiMessage } from "../../lib/api";
-import { fmtDateTime, fmtRelative } from "../../lib/utils";
+import { fmtRelative } from "../../lib/utils";
 
 const CATEGORIES = [
   { value: "", label: "Tất cả phân loại" },
@@ -26,7 +25,7 @@ const CATEGORIES = [
 const STATUSES = [
   { value: "", label: "Tất cả trạng thái" },
   { value: "open", label: "Mở" },
-  { value: "under_review", label: "Đang xử lý" },
+  { value: "in_progress", label: "Đang xử lý" },
   { value: "resolved", label: "Đã xử lý" },
   { value: "closed", label: "Đã đóng" },
 ];
@@ -38,7 +37,6 @@ const CATEGORY_LABELS = {
 };
 
 export default function IncidentsPage() {
-  const { user } = useAuthStore();
   const navigate = useNavigate();
 
   const [items, setItems] = useState([]);
@@ -68,25 +66,25 @@ export default function IncidentsPage() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.status, filters.category, page]);
 
   return (
     <>
       <Topbar
         title="Sự cố"
-        subtitle="Báo cáo và theo dõi sự cố phòng lab, máy trạm"
+        subtitle="Báo cáo và theo dõi sự cố"
         actions={
-          <button className="btn-primary" onClick={() => setCreating(true)}>
-            <Plus size={16} /> Báo sự cố
+          <button className="btn btn-primary btn-sm" onClick={() => setCreating(true)}>
+            <Plus size={14} /> Báo sự cố
           </button>
         }
       />
 
-      <div className="p-6 space-y-5">
-        <div className="flex gap-3 flex-wrap">
+      <div className="p-4 lg:p-6 space-y-4">
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2">
           <select
-            className="input w-auto min-w-[180px]"
+            className="input w-auto min-w-[160px]"
             value={filters.status}
             onChange={(e) => {
               setFilters({ ...filters, status: e.target.value });
@@ -94,13 +92,11 @@ export default function IncidentsPage() {
             }}
           >
             {STATUSES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
+              <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
           <select
-            className="input w-auto min-w-[180px]"
+            className="input w-auto min-w-[160px]"
             value={filters.category}
             onChange={(e) => {
               setFilters({ ...filters, category: e.target.value });
@@ -108,9 +104,7 @@ export default function IncidentsPage() {
             }}
           >
             {CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
+              <option key={c.value} value={c.value}>{c.label}</option>
             ))}
           </select>
         </div>
@@ -122,7 +116,7 @@ export default function IncidentsPage() {
             <EmptyState
               icon={AlertTriangle}
               title="Chưa có sự cố"
-              description="Khi gặp vấn đề với phòng hoặc máy, bấm 'Báo sự cố' phía trên."
+              description="Khi gặp vấn đề, bấm 'Báo sự cố' phía trên."
             />
           ) : (
             <div className="overflow-x-auto">
@@ -141,33 +135,23 @@ export default function IncidentsPage() {
                 <tbody>
                   {items.map((t) => (
                     <tr key={t.id}>
-                      <td className="font-mono text-xs text-slate-500">
-                        {t.id}
-                      </td>
+                      <td className="font-mono text-xs text-slate-500">{t.id}</td>
                       <td>
-                        <Badge tone="slate">
+                        <Badge tone="default">
                           {CATEGORY_LABELS[t.category] || t.category}
                         </Badge>
                       </td>
-                      <td className="max-w-[260px]">
-                        <div className="text-sm text-slate-900 line-clamp-2">
-                          {t.description}
-                        </div>
+                      <td className="max-w-[240px]">
+                        <div className="text-sm text-slate-900 line-clamp-2">{t.description}</div>
                         <div className="text-xs text-slate-500">
                           {t.reporter?.full_name || t.reporter?.username}
                         </div>
                       </td>
-                      <td className="text-sm">
-                        {t.workstation?.station_code ||
-                          t.lab_room?.room_code ||
-                          "—"}
+                      <td className="text-xs text-slate-600">
+                        {t.workstation?.station_code || t.lab_room?.room_code || "—"}
                       </td>
-                      <td>
-                        <StatusBadge status={t.status} />
-                      </td>
-                      <td className="text-xs text-slate-500">
-                        {fmtRelative(t.created_at)}
-                      </td>
+                      <td><StatusBadge status={t.status} /></td>
+                      <td className="text-xs text-slate-500">{fmtRelative(t.created_at)}</td>
                       <td className="text-right">
                         <Link
                           to={`/incidents/${t.id}`}
@@ -249,17 +233,15 @@ function CreateIncidentModal({ onClose, onCreated }) {
       size="md"
       footer={
         <>
-          <button className="btn-secondary" onClick={onClose}>
-            Hủy
-          </button>
-          <button className="btn-primary" disabled={saving} onClick={onSubmit}>
+          <button className="btn btn-secondary" onClick={onClose}>Hủy</button>
+          <button className="btn btn-primary" disabled={saving} onClick={onSubmit}>
             {saving ? "Đang gửi..." : "Gửi báo cáo"}
           </button>
         </>
       }
     >
       <form className="space-y-4" onSubmit={onSubmit}>
-        <div>
+        <div className="form-group">
           <label className="label">Phân loại *</label>
           <select
             className="input"
@@ -273,8 +255,8 @@ function CreateIncidentModal({ onClose, onCreated }) {
             <option value="software">Phần mềm</option>
           </select>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="form-group">
             <label className="label">Phòng (tùy chọn)</label>
             <select
               className="input"
@@ -283,20 +265,16 @@ function CreateIncidentModal({ onClose, onCreated }) {
             >
               <option value="">— Không chọn —</option>
               {rooms.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.room_code} — {r.name}
-                </option>
+                <option key={r.id} value={r.id}>{r.room_code} — {r.name}</option>
               ))}
             </select>
           </div>
-          <div>
+          <div className="form-group">
             <label className="label">Máy trạm (tùy chọn)</label>
             <select
               className="input"
               value={form.workstationId}
-              onChange={(e) =>
-                setForm({ ...form, workstationId: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, workstationId: e.target.value })}
             >
               <option value="">— Không chọn —</option>
               {workstations.map((w) => (
@@ -307,7 +285,7 @@ function CreateIncidentModal({ onClose, onCreated }) {
             </select>
           </div>
         </div>
-        <div>
+        <div className="form-group">
           <label className="label">Mô tả chi tiết *</label>
           <textarea
             className="input"
@@ -315,7 +293,7 @@ function CreateIncidentModal({ onClose, onCreated }) {
             required
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Mô tả sự cố gặp phải: hiện tượng, thời gian xảy ra, ảnh hưởng..."
+            placeholder="Mô tả sự cố: hiện tượng, thời gian xảy ra, ảnh hưởng..."
           />
         </div>
       </form>

@@ -28,11 +28,11 @@ export default function ForgotPasswordPage() {
   return (
     <AuthLayout
       title="Quên mật khẩu"
-      subtitle="Nhập email — chúng tôi sẽ gửi mã OTP để đặt lại mật khẩu"
+      subtitle="Nhập email để nhận mã OTP đặt lại mật khẩu"
       footer={
         <Link
           to="/login"
-          className="text-brand-600 font-semibold hover:underline"
+          className="text-brand-600 font-medium hover:underline"
         >
           Quay lại đăng nhập
         </Link>

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { CalendarClock, X } from "lucide-react";
 import toast from "react-hot-toast";
 import Topbar from "../../components/layout/Topbar";
@@ -45,7 +44,6 @@ export default function MyReservationsPage() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, page]);
 
   const onCancel = async (r) => {
@@ -66,27 +64,24 @@ export default function MyReservationsPage() {
         subtitle="Theo dõi các yêu cầu đặt phòng và máy"
       />
 
-      <div className="p-6 space-y-5">
-        <div className="card">
-          <div className="border-b border-slate-100 px-2 pt-2 flex flex-wrap gap-1">
-            {STATUS_TABS.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => {
-                  setStatusFilter(t.key);
-                  setPage(1);
-                }}
-                className={`px-4 py-2 text-sm rounded-t-lg transition border-b-2 ${
-                  statusFilter === t.key
-                    ? "border-brand-600 text-brand-700 font-semibold"
-                    : "border-transparent text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
+      <div className="p-4 lg:p-6 space-y-4">
+        {/* Status tabs */}
+        <div className="tab-list">
+          {STATUS_TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => {
+                setStatusFilter(t.key);
+                setPage(1);
+              }}
+              className={`tab-item ${statusFilter === t.key ? "tab-item-active" : ""}`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
 
+        <div className="card">
           {loading ? (
             <Loader />
           ) : items.length === 0 ? (
@@ -111,7 +106,7 @@ export default function MyReservationsPage() {
                   {items.map((r) => (
                     <tr key={r.id}>
                       <td>
-                        <div className="font-medium text-slate-900">
+                        <div className="font-medium text-slate-900 text-sm">
                           {r.resource_type === "lab_room"
                             ? `Phòng ${r.lab_room?.room_code || "—"}`
                             : `Máy ${r.workstation?.station_code || "—"}`}
@@ -123,10 +118,8 @@ export default function MyReservationsPage() {
                         </div>
                       </td>
                       <td className="text-sm">
-                        <div>{fmtDateTime(r.start_time)}</div>
-                        <div className="text-xs text-slate-500">
-                          → {fmtDateTime(r.end_time)}
-                        </div>
+                        <div className="text-slate-700">{fmtDateTime(r.start_time)}</div>
+                        <div className="text-xs text-slate-500">→ {fmtDateTime(r.end_time)}</div>
                       </td>
                       <td className="max-w-xs">
                         <div className="text-sm text-slate-700 line-clamp-2">
@@ -138,16 +131,14 @@ export default function MyReservationsPage() {
                           </div>
                         )}
                       </td>
-                      <td>
-                        <StatusBadge status={r.status} />
-                      </td>
+                      <td><StatusBadge status={r.status} /></td>
                       <td className="text-right">
                         {r.status === "pending" && (
                           <button
-                            className="btn-ghost text-xs hover:text-red-600"
+                            className="btn btn-ghost btn-sm text-xs hover:text-red-600"
                             onClick={() => onCancel(r)}
                           >
-                            <X size={14} /> Hủy
+                            <X size={13} /> Hủy
                           </button>
                         )}
                       </td>

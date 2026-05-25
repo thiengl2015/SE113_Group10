@@ -37,21 +37,21 @@ export default function LoginPage() {
   return (
     <AuthLayout
       title="Đăng nhập"
-      subtitle="Đăng nhập với tài khoản CLMS của bạn để tiếp tục"
+      subtitle="Đăng nhập với tài khoản CLMS của bạn"
       footer={
         <>
           Chưa có tài khoản?{" "}
           <Link
             to="/register"
-            className="text-brand-600 font-semibold hover:underline"
+            className="text-brand-600 font-medium hover:underline"
           >
-            Đăng ký ngay
+            Đăng ký
           </Link>
         </>
       }
     >
       <form className="space-y-4" onSubmit={onSubmit}>
-        <div>
+        <div className="form-group">
           <label className="label">Email hoặc tên đăng nhập</label>
           <input
             className="input"
@@ -62,9 +62,9 @@ export default function LoginPage() {
             autoFocus
           />
         </div>
-        <div>
-          <div className="flex justify-between items-baseline">
-            <label className="label">Mật khẩu</label>
+        <div className="form-group">
+          <div className="flex justify-between items-center">
+            <label className="label mb-0">Mật khẩu</label>
             <Link
               to="/forgot-password"
               className="text-xs text-brand-600 hover:underline"
@@ -76,7 +76,7 @@ export default function LoginPage() {
             <input
               className="input pr-10"
               type={showPw ? "text" : "password"}
-              placeholder="••••••••"
+              placeholder="Nhập mật khẩu"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -84,9 +84,9 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPw((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
             >
-              {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+              {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
         </div>
@@ -94,26 +94,21 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary w-full py-2.5"
+          className="btn-primary w-full"
         >
           {loading ? <Loader2 className="animate-spin" size={16} /> : null}
           Đăng nhập
         </button>
       </form>
 
-      <div className="mt-6 rounded-xl border border-dashed border-slate-200 p-3.5 text-xs text-slate-500 bg-slate-50/60">
-        <div className="font-semibold text-slate-700 mb-1">Tài khoản demo</div>
-        <ul className="space-y-0.5">
-          <li>
-            <code>admin</code> / <code>Admin@1234</code> — Quản trị
-          </li>
-          <li>
-            <code>staff1</code> / <code>Test@1234</code> — Nhân viên
-          </li>
-          <li>
-            <code>student1</code> / <code>Test@1234</code> — Người dùng
-          </li>
-        </ul>
+      {/* Demo credentials */}
+      <div className="mt-6 p-3 border border-slate-200 rounded-lg bg-slate-50">
+        <div className="text-xs font-medium text-slate-600 mb-2">Tài khoản demo</div>
+        <div className="space-y-1 text-xs text-slate-500">
+          <div><code className="text-slate-700">admin</code> / <code className="text-slate-700">Admin@1234</code> — Quản trị</div>
+          <div><code className="text-slate-700">staff1</code> / <code className="text-slate-700">Test@1234</code> — Nhân viên</div>
+          <div><code className="text-slate-700">student1</code> / <code className="text-slate-700">Test@1234</code> — Người dùng</div>
+        </div>
       </div>
     </AuthLayout>
   );
