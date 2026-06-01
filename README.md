@@ -1,31 +1,50 @@
-# CLMS — Computer Lab Management System
+# CLMS - Computer Lab Management System
 
-A full-stack web application for managing computer labs, workstations, and reservations. Built for SE113 — Group 10.
+A full-stack web application for managing computer labs, workstations, and reservations. Built for SE113 - Group 10.
 
 ## Tech Stack
 
 | Layer    | Technologies                                                                 |
 | -------- | ---------------------------------------------------------------------------- |
 | Frontend | React 18, Vite, TailwindCSS, Zustand, React Router 6                         |
-| Backend  | Node.js, Express, Prisma ORM, PostgreSQL                                     |
+| Backend  | Node.js, Express, Prisma ORM, MySQL                                          |
 | Auth     | JWT (access + refresh via httpOnly cookie), bcryptjs, OTP email verification |
 | Docs     | Swagger UI (OpenAPI 3)                                                       |
 
-## Quick Start
+## Installation Guide
+
+### Prerequisites
+
+- Node.js (LTS recommended)
+- npm
+- MySQL
+
+### Backend Setup
 
 ```bash
-# 1. Backend
 cd Backend
 npm install
-cp .env.example .env        # fill in JWT secrets + email credentials
+cp .env.example .env
 npm run prisma:generate
-npm run dev                  # → http://localhost:5000
+npm run dev
+```
 
-# 2. Frontend
+Update `.env` with your DB credentials, JWT secrets, and email settings. The backend initializes the database using `Backend/sql/schema.sql` and `Backend/sql/seed.sql` on startup and skips seeding if data already exists. Default API base URL: http://localhost:5000
+
+### Frontend Setup
+
+```bash
 cd Frontend
 npm install
-npm run dev                  # → http://localhost:3000 (proxies /api → :5000)
+npm run dev
 ```
+
+Default frontend URL: http://localhost:3000 (proxies `/api` to port 5000).
+
+### Optional Tests
+
+- Backend: `npm test`
+- Frontend E2E: `npm run cypress:open` or `npm run cypress:run`
 
 ## Features
 
@@ -41,22 +60,51 @@ npm run dev                  # → http://localhost:3000 (proxies /api → :5000
 
 ```
 ├── Backend/
-│   ├── prisma/schema.prisma
+│   ├── .env.example
 │   ├── openapi.yaml
+│   ├── package.json
+│   ├── __tests__/
+│   ├── prisma/
+│   │   └── schema.prisma
+│   ├── sql/
+│   │   ├── schema.sql
+│   │   └── seed.sql
 │   └── src/
+│       ├── index.js
+│       ├── config/
 │       ├── controllers/
-│       ├── services/
-│       ├── routes/
 │       ├── middlewares/
-│       ├── validators/
-│       └── utils/
+│       ├── routes/
+│       ├── services/
+│       ├── utils/
+│       └── validators/
 ├── Frontend/
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   ├── cypress.config.json
+│   ├── cypress/
+│   │   ├── e2e/
+│   │   └── support/
 │   └── src/
-│       ├── pages/          # auth, dashboard, lab rooms, workstations, reservations, incidents, admin
-│       ├── components/     # layout (Sidebar, Topbar), ui (Modal, Badge, Pagination, Loader)
-│       ├── services/       # API layer (axios)
-│       ├── store/          # Zustand auth store
-│       └── lib/            # interceptors, utils, auth helpers
+│       ├── App.jsx
+│       ├── main.jsx
+│       ├── index.css
+│       ├── components/
+│       │   ├── layout/
+│       │   └── ui/
+│       ├── pages/
+│       │   ├── auth/
+│       │   ├── incidents/
+│       │   ├── labrooms/
+│       │   ├── reservations/
+│       │   ├── workstations/
+│       │   └── admin/
+│       ├── services/
+│       ├── store/
+│       └── lib/
+├── CLMS_TestCases_ChiTiet.md
 └── README.md
 ```
 

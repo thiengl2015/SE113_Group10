@@ -7,11 +7,11 @@ const buildDatabaseUrl = () => {
   const pass = encodeURIComponent(process.env.DB_PASSWORD || "");
   const auth = user ? (pass ? `${user}:${pass}` : user) : "";
   const host = process.env.DB_HOST || "localhost";
-  const port = parseInt(process.env.DB_PORT, 10) || 5432;
+  const port = parseInt(process.env.DB_PORT, 10) || 3306;
   const db = process.env.DB_NAME || "clms_db";
 
   const authPart = auth ? `${auth}@` : "";
-  return `postgresql://${authPart}${host}:${port}/${db}?schema=public`;
+  return `mysql://${authPart}${host}:${port}/${db}`;
 };
 
 process.env.DATABASE_URL = buildDatabaseUrl();
