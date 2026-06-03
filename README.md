@@ -104,7 +104,7 @@ Default frontend URL: http://localhost:3000 (proxies `/api` to port 5000).
 │       ├── services/
 │       ├── store/
 │       └── lib/
-├── CLMS_TestCases_ChiTiet.md
+├── CLMS_TestCases_Detailed.md
 └── README.md
 ```
 
