@@ -96,10 +96,6 @@ CREATE TABLE IF NOT EXISTS reservations (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CHECK (start_time < end_time),
-  CHECK (
-    (resource_type = 'lab_room' AND lab_room_id IS NOT NULL AND workstation_id IS NULL) OR
-    (resource_type = 'workstation' AND workstation_id IS NOT NULL AND lab_room_id IS NULL)
-  ),
   CONSTRAINT fk_reservation_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_reservation_processed_by FOREIGN KEY (processed_by) REFERENCES users(id) ON DELETE SET NULL,
   CONSTRAINT fk_reservation_lab_room FOREIGN KEY (lab_room_id) REFERENCES lab_rooms(id) ON DELETE SET NULL,
@@ -125,7 +121,6 @@ CREATE TABLE IF NOT EXISTS incident_tickets (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   resolved_at DATETIME NULL DEFAULT NULL,
-  CHECK (workstation_id IS NOT NULL OR lab_room_id IS NOT NULL),
   CONSTRAINT fk_incident_reporter FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_incident_assignee FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL,
   CONSTRAINT fk_incident_lab_room FOREIGN KEY (lab_room_id) REFERENCES lab_rooms(id) ON DELETE SET NULL,
